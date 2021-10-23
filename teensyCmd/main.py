@@ -199,6 +199,18 @@ def close_dialog():
         master.destroy()
 
 
+def check_port():
+    port_lst = serial.tools.list_ports.comports()
+    try:
+        for port_item in port_lst:
+            if port_item.device == port:
+                return 1
+        else:
+            return 0
+    except NameError:
+        return 0
+
+
 def check_connection():
     port_lst = serial.tools.list_ports.comports()
     try:
@@ -311,7 +323,7 @@ btn_sig_start = create_button(frame_sig_3, "start", 25, lambda: sig_set(1))
 btn_sig_stop = create_button(frame_sig_3, "stop", 25, lambda: sig_set(0))
 btn_sig_pulse = create_button(frame_sig_3, "pulse", 25, lambda: sig_set(2))
 
-btn_create_ini = create_button(frame_com, "create ini", 55, create_ini)
+btn_create_ini = create_button(frame_com, "create teensyCtrl.ini", 120, create_ini)
 
 combo_ktx1_unit = ttk.Combobox(frame_tr1, values=('ms', 'us'), width=4)
 combo_trg1_1_unit = ttk.Combobox(frame_tr1, values=('ms', 'us'), width=4)
@@ -411,9 +423,9 @@ entry_sig_rand.insert(0, sig_settings.rand)
 combo_sig_pin.insert(0, sig_settings.pin)
 combo_sig_unit.insert(0, sig_settings.unit)
 
-combo_port.grid(sticky='w', row=0, column=0, pady=3)
+combo_port.grid(sticky='w', row=0, column=0, padx=2, pady=3)
 btn_connect.grid(row=0, column=1, padx=5)
-btn_create_ini.grid(sticky='w', row=1, column=0, padx=5)
+btn_create_ini.grid(sticky='w', row=1, column=0, padx=2, pady=(0, 4))
 frame_com.grid(sticky='w', row=0, column=0, padx=5, pady=3)
 
 lbl_tr1.grid(sticky='nw', row=0, column=0, padx=2)
@@ -498,7 +510,7 @@ frame_right.grid(sticky='w', row=0, column=1, padx=0, pady=5)
 
 # text_order.config(state=tk.NORMAL)
 
-if port != 'none' and auto_connect == 'on':
+if check_port() and auto_connect == 'on':
     connect_com()
 
 master.mainloop()
