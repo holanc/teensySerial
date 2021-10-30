@@ -73,6 +73,22 @@ void setup() {
   memset(container, 0, sizeof container);
 }
 
+void teensy_reset_pins()
+{
+  int i;
+  
+  for (i = 0; i < PIN_NUM; i++) {
+    if (i == 28 || i == 29) {
+      continue;
+    }
+    if (outPin[i].active == 1 || outPin[i].active == 3) {
+      digitalWrite(i, LO);
+      outPin[i].active = 0;
+    }
+  } 
+//      SCB_AIRCR = 0x05FA0004;
+}
+
 void loop() {
   counter[0] = millis();
   counter[1] = micros();
@@ -146,7 +162,7 @@ void loop() {
         }
       }
     } else if (strncmp(input, "RESET", 5) == 0) {
-      SCB_AIRCR = 0x05FA0004;
+      teensy_reset_pins();
     }
     newData = false;
   }
@@ -160,7 +176,7 @@ void loop() {
             outPin[i].startTime = counter[outPin[i].unit] + outPin[i].loTime;
             outPin[i].status = LO;
           } else {
-            outPin[i].active == 0;
+            outPin[i].active = 0;
           }
         }
       } else {
@@ -170,26 +186,9 @@ void loop() {
           outPin[i].status = HI;
         }
       }
-    } else if (outPin[i].active == 2) {
-      if (outPin[i].status == HI) {
-        if (((signed long)(outPin[i].stopTime - counter[outPin[i].unit])) <= 0) {
-          digitalWrite(i, LO);
-          outPin[i].startTime = counter[outPin[i].unit] + (seqArr[outPin[i].seqIdx] - outPin[i].hiTime);
-          outPin[i].status = LO;
-        }
-      } else {
-        if (((signed long)(outPin[i].startTime - counter[outPin[i].unit])) <= 0) {
-          digitalWrite(i, HI);
-          outPin[i].seqIdx++;
-          if (outPin[i].seqIdx > (outPin[i].numVal - 1))
-            outPin[i].seqIdx = 0;
-          outPin[i].stopTime = counter[outPin[i].unit] + outPin[i].hiTime;
-          outPin[i].status = HI;
-        }
-      }
     } else if (outPin[i].active == 3) {
       if (outPin[i].status == HI) {
-        int minval, maxval, randval;
+        int randval;
         if (((signed long)(outPin[i].stopTime - counter[outPin[i].unit])) <= 0) {
           digitalWrite(i, LO);
           randval = random(outPin[i].hiTime * 2, outPin[i].loTime);
@@ -211,6 +210,6 @@ void loop() {
 #define SWITCH_OFF_AFTER_8h 28800000
 
   if ((signed long)((lastCmdCounter + SWITCH_OFF_AFTER_4h) - counter[0]) <= 0) {
-    SCB_AIRCR = 0x05FA0004;
-  } 
+    teensy_reset_pins();
+  }
 }
